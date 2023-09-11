@@ -42,6 +42,7 @@ print(f"D1 : {d1}")
 print(f"D2 : {d2}")
 print(f"Slope : {(d2-d1)/h}")
 
+# A class that will help to track trace of operations performed on values
 class Value:
     def __init__(self, data, _children=(), _op=""):
         self.data = data
@@ -82,11 +83,6 @@ print(nodes, edges)
 graph = Digraph(name="Equation relationship", format="png")
 for node in nodes:
     graph.node(name=str(id(node)), label=f"Data = {node.data}", shape="record") 
-# graph.node(name=str(id(a)), label=f"Data = {a.data}", shape="record")
-# graph.node(name=str(id(b)), label=f"Data = {b.data}", shape="record")
-# graph.node(name="+", label=f"+")
-# graph.edge(str(id(a)), "+")
-# graph.edge(str(id(b)), "+")
 for tail, head in edges:
     graph.edge(str(id(tail)), str(id(head)))
 print(graph.source)
