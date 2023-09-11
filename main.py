@@ -60,16 +60,35 @@ a = Value(2.0)
 b = Value(-3.0)
 c = Value(10.0)
 d = a * b + c
-print(a)
-print(b)
-print(c)
-print(d._prev)
+print(f"a data: {a}, children: {a._prev}, op: {a._op}")
+print(f"b data: {b}, children: {b._prev}, op: {b._op}")
+print(f"c data: {c}, children: {c._prev}, op: {c._op}")
+print(f"d data: {d}, children: {d._prev}, op: {d._op}")
 
 from graphviz import Digraph
+def trace(root):
+    nodes, edges = set(), set()
+    def build(node):
+        if node not in nodes:
+            nodes.add(node)
+            for child in node._prev:
+                edges.add((child, node))
+                print(f"data: {child.data}, children: {child._prev}, op: {child._op}")
+                build(child)
+    build(root)
+    return nodes, edges
+nodes, edges = trace(d)
+print(nodes, edges)
 graph = Digraph(name="Equation relationship", format="png")
-graph.node(name=str(id(a)), label=f"Data = {a.data})", shape="record")
-graph.node(name=str(id(b)), label=f"Data = {b.data})", shape="record")
-graph.edge(str(id(a)), str(id(b)))
+for node in nodes:
+    graph.node(name=str(id(node)), label=f"Data = {node.data}", shape="record") 
+# graph.node(name=str(id(a)), label=f"Data = {a.data}", shape="record")
+# graph.node(name=str(id(b)), label=f"Data = {b.data}", shape="record")
+# graph.node(name="+", label=f"+")
+# graph.edge(str(id(a)), "+")
+# graph.edge(str(id(b)), "+")
+for tail, head in edges:
+    graph.edge(str(id(tail)), str(id(head)))
 print(graph.source)
 print(id(graph))
 graph.render(directory=path.dirname(__file__), view=True)
