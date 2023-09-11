@@ -83,8 +83,11 @@ print(nodes, edges)
 graph = Digraph(name="Equation relationship", format="png")
 for node in nodes:
     graph.node(name=str(id(node)), label=f"Data = {node.data}", shape="record") 
+    if node._op:
+        graph.node(name=f"{id(node)}{node._op}", label=node._op)
+        graph.edge(f"{id(node)}{node._op}", str(id(node)))
 for tail, head in edges:
-    graph.edge(str(id(tail)), str(id(head)))
+    graph.edge(str(id(tail)), f"{id(head)}{head._op}")
 print(graph.source)
 print(id(graph))
 graph.render(directory=path.dirname(__file__), view=True)
