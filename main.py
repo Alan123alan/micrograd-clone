@@ -70,6 +70,8 @@ e.label = "e"
 e.grad = 1.00
 d.grad = 1.00
 c.grad = 1.00
+a.grad = -3.00
+b.grad = 2.00
 # Checking the objects are set correctly
 print(f"a data: {a}, children: {a._prev}, op: {a._op}")
 print(f"b data: {b}, children: {b._prev}, op: {b._op}")
@@ -110,14 +112,13 @@ def manual_backpropagation():
     e1 = d + c
     d.label = "d"
     e1.label = "e"
+    b.data += h
     d = a * b
-    d.data += h
+    # d.data += h
     e2 = d + c
     slope = (e2.data-e1.data)/h
     print(slope)
-    # The grad of a current node
-    # Is the derivate of previous node with respect
-    # To current node (with exception of the head node)
+    # To current node (with exception of the head node which grad is the 1 because dhead/dhead = 1)
     # So if a*b = d and c + d = e
     # de/de = 1 so this will be the grad for the head node
     # Then we need to derive de/dd and de/dc to get the grads (slopes)
@@ -125,5 +126,19 @@ def manual_backpropagation():
     # By applying the definition of derivative f(x+h)-f(x)/h
     # We have ((d+h+c)-(d+c))/h -> 1.00
     # And for de/dc ((d+c+h)-(d+c))/h -> 1.00
+    # Now to get how does a and b affect e it gets a bit more complicated
+    # Since a and b only affect e through their influence on d
+    # And this matches with the definition of the chain rule from calculus
+    # If a variable z depends on the variable y, which itself depends on the variable x (that is, y and z are dependent variables), then z depends on x as well, via the intermediate variable y.
+    # This can be expressed as dz/dx = dz/dy * dy/dx
+    # So if e depends on d which depends also on a we have
+    # de/da = de/dd * dd/da -> de/da = 1.00 * d(a * b)/da
+    # (a+h * b)-(a * b)/h -> a*b + h*b - a*b/h -> h*b/h -> b
+    # Then de/da = 1.00 * b, for b = -3.00 de/da = -3.00
+    # de/db = de/dd * dd/db -> de/db = 1.00 * d(a * b)/db
+    # (a * b+h)-(a * b)/h -> a*b + h*a - a*b/h -> h*a/h -> a
+    # Then de/db = 1.00 * a, for a = 2.00 de/db = 2.00
+    # An interesting note is that plus nodes take the parent gradient and distribute it tho the children nodes
+    
 manual_backpropagation()
 
