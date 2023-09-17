@@ -74,8 +74,11 @@ class Value:
     def tanh(self):
         x = self.data
         tanh = (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
-        return Value(data=tanh, _children=(self, ), _op="tanh")
-
+        out = Value(data=tanh, _children=(self, ), _op="tanh")
+        def _backward():
+            self.grad = (1 - tanh**2) * out.grad
+        out._backward = _backward
+        return out
 # Instantiating value objects 
 a = Value(2.0,label="a")
 b = Value(-3.0, label="b")
@@ -122,8 +125,8 @@ def draw(nodes, edges):
     # print(graph.source)
     graph.render(directory=path.dirname(__file__), view=True)
 
-nodes, edges = trace(e)
-draw(nodes, edges)
+# nodes, edges = trace(e)
+# draw(nodes, edges)
 # print(nodes, edges)
 
 def manual_backpropagation():
@@ -176,9 +179,9 @@ def neuron_implementation():
     x1w1_x2w2 = x1w1 + x2w2; x1w1_x2w2.label = "x1w1+x2w2"
     neuron_cell_body = x1w1_x2w2 + b; neuron_cell_body.label = "neuron cell body"
     output = neuron_cell_body.tanh(); output.label = "output"
-    nodes, edges = trace(output)
+    # nodes, edges = trace(output)
     # Output after activation function
-    draw(nodes, edges)
+    # draw(nodes, edges)
 
 neuron_implementation()
 
@@ -222,6 +225,34 @@ def neuron_backpropagation():
     # By logic
     x1.grad = w1.data * x1w1.grad
     w1.grad = x1.data * x1w1.grad
+    # nodes, edges = trace(o)
+    # draw(nodes, edges)
+neuron_backpropagation()
+
+def neuron_automatic_backpropagation():
+    x1 = Value(data=2.0, label="x1")
+    x2 = Value(data=0.0, label="x2")
+    w1 = Value(data=-3.0, label="w1")
+    w2 = Value(data=1.0, label="w2")
+    b = Value(data=6.8813735870195432, label="b")
+    x1w1 = x1*w1; x1w1.label = "x1w1"
+    x2w2 = x2*w2; x2w2.label = "x2w2"
+    x1w1_x2w2 = x1w1 + x2w2; x1w1_x2w2.label = "x1w1+x2w2"
+    n = x1w1_x2w2 + b; n.label = "neuron cell body"
+    o = n.tanh(); o.label = "output"
+    # Since the tanh result value backpropagation function applies the chain rule by default
+    # we need to manually set o.grad for backpropagation to work as expected
+    o.grad = 1.00
+    o._backward()
+    n._backward()
+    x1w1_x2w2._backward()
+    x2w2._backward()
+    x1w1._backward()
+    x2._backward()
+    w2._backward()
+    x1._backward()
+    w1._backward()
     nodes, edges = trace(o)
     draw(nodes, edges)
-neuron_backpropagation()
+neuron_automatic_backpropagation()
+# TO DO: Do I need to include a step or conditional to not apply chain rule for multiplication result nodes?
