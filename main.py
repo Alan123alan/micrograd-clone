@@ -174,7 +174,7 @@ def neuron_backpropagation():
     x2 = Value(data=0.0, label="x2")
     w1 = Value(data=-3.0, label="w1")
     w2 = Value(data=1.0, label="w2")
-    b = Value(data=6.7, label="b")
+    b = Value(data=6.8813735870195432, label="b")
     x1w1 = x1*w1; x1w1.label = "x1w1"
     x2w2 = x2*w2; x2w2.label = "x2w2"
     x1w1_x2w2 = x1w1 + x2w2; x1w1_x2w2.label = "x1w1+x2w2"
@@ -191,6 +191,24 @@ def neuron_backpropagation():
     # do/db = do/dn * dn/db, and n = x1w1x2w2 + b
     # (x1w1x2w2 + b + h) - (x1w1x2w2 + b)/h -> h/h -> 1.00
     # do/dn = 1.00 - (o.data**2) and dn/db = 1.00 so do/db = 1.00 * (1.00 -(o.data**2))
-    b.grad = 1.00 * (1.00 - (o.data**2)) # worked basically for no reason since it was previously stated that '+' nodes only pass gradients
+    # b.grad = 1.00 * (1.00 - (o.data**2)) # worked basically for no reason since it was previously stated that '+' nodes only pass gradients
+    b.grad = n.grad
+    x1w1_x2w2.grad = n.grad
+    # Since do/dx1w1 and do/dx2w2 will both be 1.00 because they are added nodes
+    # Then applying the chain rule will get that x1w1 grad = 1.0 * (x1w1 + x2w2 grad) 
+    # Then applying the chain rule will get that x2w2 grad = 1.0 * (x1w1 + x2w2 grad) 
+    x1w1.grad = x1w1_x2w2.grad
+    x2w2.grad = x1w1_x2w2.grad
+    # Now we are at the start and we need to get do/x2 and do/w2
+    # First do/x2 = do/dx2w2 * dx2w2/x2
+    # dx2w2/x2 -> (x2+h * w2) - (x2 * w2)/h -> (x2 * w2 + h * w2 - x2 * w2)/h -> (h * w2)/h -> w2
+    # And we know that we must multiply w2 times the previous grad to get do/dx2
+    x2.grad = w2.data * x2w2.grad
+    # By the same proces dx2w2/dw2 -> d(x2 * w2)/dw2 -> (x2 * (w2+h) - (x2 * w2))/h -> (x2*h + x2*w2 - x2w2)/h -> x2
+    w2.grad = x2.data * x2w2.grad
+    # By logic
+    x1.grad = w1.data * x1w1.grad
+    w1.grad = x1.data * x1w1.grad
     nodes, edges = trace(o)
- 
+    draw(nodes, edges)
+neuron_backpropagation()
