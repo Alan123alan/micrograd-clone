@@ -58,6 +58,10 @@ class Value:
     def __mul__(self, other):
         out = Value(self.data * other.data, (self, other), "*")
         return out
+    def tanh(self):
+        x = self.data
+        tanh = (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
+        return Value(data=tanh, _children=(self, ), _op="tanh")
 
 # Instantiating value objects 
 a = Value(2.0,label="a")
@@ -79,6 +83,8 @@ print(f"c data: {c}, children: {c._prev}, op: {c._op}")
 print(f"d data: {d}, children: {d._prev}, op: {d._op}")
 
 from graphviz import Digraph
+
+
 def trace(root):
     nodes, edges = set(), set()
     def build(node):
@@ -89,19 +95,23 @@ def trace(root):
                 build(child)
     build(root)
     return nodes, edges
-nodes, edges = trace(e)
-print(nodes, edges)
-graph = Digraph(name="Equation relationship", format="png")
-for node in nodes:
-    graph.node(name=str(id(node)), label=f"{node.label} | data = {node.data} | grad = {node.grad}", shape="record") 
-    if node._op:
-        graph.node(name=f"{id(node)}{node._op}", label=node._op)
-        graph.edge(f"{id(node)}{node._op}", str(id(node)))
-for tail, head in edges:
-    graph.edge(str(id(tail)), f"{id(head)}{head._op}")
-print(graph.source)
-graph.render(directory=path.dirname(__file__), view=True)
 
+
+def draw(nodes, edges):
+    graph = Digraph(name="Equation relationship", format="png")
+    for node in nodes:
+        graph.node(name=str(id(node)), label=f"{node.label} | data = {node.data} | grad = {node.grad}", shape="record") 
+        if node._op:
+            graph.node(name=f"{id(node)}{node._op}", label=node._op)
+            graph.edge(f"{id(node)}{node._op}", str(id(node)))
+    for tail, head in edges:
+        graph.edge(str(id(tail)), f"{id(head)}{head._op}")
+    # print(graph.source)
+    graph.render(directory=path.dirname(__file__), view=True)
+
+nodes, edges = trace(e)
+draw(nodes, edges)
+# print(nodes, edges)
 
 def manual_backpropagation():
     h = 0.00001
@@ -142,3 +152,24 @@ def manual_backpropagation():
     
 manual_backpropagation()
 
+def neuron_implementation():
+    x1 = Value(data=2.0, label="x1")
+    x2 = Value(data=0.0, label="x2")
+    w1 = Value(data=-3.0, label="w1")
+    w2 = Value(data=1.0, label="w2")
+    b = Value(data=6.7, label="b")
+    x1w1 = x1*w1
+    x1w1.label = "x1w1"
+    x2w2 = x2*w2
+    x2w2.label = "x2w2"
+    x1w1_x2w2 = x1w1 + x2w2
+    x1w1_x2w2.label = "x1w1+x2w2"
+    neuron_cell_body = x1w1_x2w2 + b; neuron_cell_body.label = "neuron cell body"
+    output = neuron_cell_body.tanh(); output.label = "output"
+    nodes, edges = trace(output)
+    # Output after activation function
+    print(nodes)
+    print(edges)
+    draw(nodes, edges)
+
+neuron_implementation()
