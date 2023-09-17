@@ -158,18 +158,39 @@ def neuron_implementation():
     w1 = Value(data=-3.0, label="w1")
     w2 = Value(data=1.0, label="w2")
     b = Value(data=6.7, label="b")
-    x1w1 = x1*w1
-    x1w1.label = "x1w1"
-    x2w2 = x2*w2
-    x2w2.label = "x2w2"
-    x1w1_x2w2 = x1w1 + x2w2
-    x1w1_x2w2.label = "x1w1+x2w2"
+    x1w1 = x1*w1; x1w1.label = "x1w1"
+    x2w2 = x2*w2; x2w2.label = "x2w2"
+    x1w1_x2w2 = x1w1 + x2w2; x1w1_x2w2.label = "x1w1+x2w2"
     neuron_cell_body = x1w1_x2w2 + b; neuron_cell_body.label = "neuron cell body"
     output = neuron_cell_body.tanh(); output.label = "output"
     nodes, edges = trace(output)
     # Output after activation function
-    print(nodes)
-    print(edges)
     draw(nodes, edges)
 
 neuron_implementation()
+
+def neuron_backpropagation():
+    x1 = Value(data=2.0, label="x1")
+    x2 = Value(data=0.0, label="x2")
+    w1 = Value(data=-3.0, label="w1")
+    w2 = Value(data=1.0, label="w2")
+    b = Value(data=6.7, label="b")
+    x1w1 = x1*w1; x1w1.label = "x1w1"
+    x2w2 = x2*w2; x2w2.label = "x2w2"
+    x1w1_x2w2 = x1w1 + x2w2; x1w1_x2w2.label = "x1w1+x2w2"
+    n = x1w1_x2w2 + b; n.label = "neuron cell body"
+    o = n.tanh(); o.label = "output"
+    # do/do = 1 so the gradient at the head is 1.0
+    o.grad = 1.00
+    # Let's start backpropagation, then next is do/dn and o = tanh(n)
+    # Applying the derivative definition  f(x+h) - f(x)/h when h -> 0
+    # tanh(n+h) - tan(n)/h this seems confusing, in the video it is recommended to use d tanh(x)/dx = 1 - tanh(x)**2
+    # By using that derivative and knowing that o = tanh(n), then d tanh(n)/dn = 1 - o**2
+    n.grad = 1.00 - (o.data**2)
+    # Let's continue backpropagating to b now, we are looking for do/db, by the chain rule we know that
+    # do/db = do/dn * dn/db, and n = x1w1x2w2 + b
+    # (x1w1x2w2 + b + h) - (x1w1x2w2 + b)/h -> h/h -> 1.00
+    # do/dn = 1.00 - (o.data**2) and dn/db = 1.00 so do/db = 1.00 * (1.00 -(o.data**2))
+    b.grad = 1.00 * (1.00 - (o.data**2)) # worked basically for no reason since it was previously stated that '+' nodes only pass gradients
+    nodes, edges = trace(o)
+ 
