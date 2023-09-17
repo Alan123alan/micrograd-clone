@@ -248,11 +248,13 @@ def neuron_automatic_backpropagation():
     x1w1_x2w2._backward()
     x2w2._backward()
     x1w1._backward()
-    x2._backward()
-    w2._backward()
-    x1._backward()
-    w1._backward()
+    # The below is not needed for x1, w1, x2 and w2 because the previous calls to ._backward set those gradients
+    # x2._backward()
+    # w2._backward()
+    # x1._backward()
+    # w1._backward()
     nodes, edges = trace(o)
     draw(nodes, edges)
 neuron_automatic_backpropagation()
 # TO DO: Do I need to include a step or conditional to not apply chain rule for multiplication result nodes?
+# TO DO: Implement topological sort on the nodes to be able to implement backward progapation for a whole expression
