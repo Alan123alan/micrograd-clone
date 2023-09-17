@@ -46,6 +46,7 @@ print(f"Slope : {(d2-d1)/h}")
 class Value:
     def __init__(self, data, _children=(), _op="", label=""):
         self.data = data
+        self._backward = lambda:None
         self.grad = 0.0
         self._prev = set(_children)
         self._op = _op
@@ -53,10 +54,22 @@ class Value:
     def __repr__(self):
         return f"Value(data={self.data})"
     def __add__(self, other):
+        # out = parent node, self and other = children nodes
         out = Value(self.data + other.data, (self, other), "+")
+        # calculating local gradients by backpropagation (including chain rule)
+        def _backward():
+            self.grad = 1.0 * out.grad
+            other.grad = 1.0 * out.grad
+        out._backward = _backward
         return out
     def __mul__(self, other):
+        # out = parent node, self and other = children nodes
         out = Value(self.data * other.data, (self, other), "*")
+        # calculating local gradients by backpropagation (including chain rule)
+        def _backward():
+            self.grad = other.data * out.grad
+            other.grad = self.data * out.grad
+        out._backward = _backward
         return out
     def tanh(self):
         x = self.data
