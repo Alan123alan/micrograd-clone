@@ -79,6 +79,21 @@ class Value:
             self.grad = (1 - tanh**2) * out.grad
         out._backward = _backward
         return out
+    def backward(self):
+        topo = []
+        visited = set()
+        def topological_sort(node):
+            if node not in visited:
+                visited.add(node)
+                for child in node._prev:
+                    topological_sort(child)
+                topo.append(node)
+        topological_sort(self)
+        topo.reverse()
+        self.grad = 1.00
+        for node in topo:
+            node._backward()
+        return topo
 # Instantiating value objects 
 a = Value(2.0,label="a")
 b = Value(-3.0, label="b")
@@ -256,13 +271,14 @@ def neuron_automatic_backpropagation():
     o = n.tanh(); o.label = "output"
     # Since the tanh result value backpropagation function applies the chain rule by default
     # we need to manually set o.grad for backpropagation to work as expected
-    o.grad = 1.00
-    visited = set()
-    topo = []
-    topological_sort(o, visited, topo)
-    topo.reverse()
-    for node in topo:
-        node._backward()
+    # o.grad = 1.00
+    o.backward()
+    # visited = set()
+    # topo = []
+    # topological_sort(o, visited, topo)
+    # topo.reverse()
+    # for node in topo:
+        # node._backward()
     # o._backward()
     # n._backward()
     # x1w1_x2w2._backward()
