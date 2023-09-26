@@ -258,3 +258,20 @@ def neuron_automatic_backpropagation():
 neuron_automatic_backpropagation()
 # TO DO: Do I need to include a step or conditional to not apply chain rule for multiplication result nodes?
 # TO DO: Implement topological sort on the nodes to be able to implement backward progapation for a whole expression
+stack = []
+visited = set()
+#More than a topological sort this seems more like a DFS algorithm
+#root->child1->child1_child1
+def topological_sort(node: Value):
+    if node not in visited:
+        visited.add(node)
+        for child in node._prev:
+            topological_sort(child)
+        stack.append(node)
+d = Value(data=2)
+e = Value(data=3)
+c = d + e
+b = Value(data=4)
+a = b + c
+topological_sort(a)
+print(stack)
