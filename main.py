@@ -229,6 +229,20 @@ def neuron_backpropagation():
     # draw(nodes, edges)
 neuron_backpropagation()
 
+#IMPLEMENTATION: Topological sort
+# stack = []
+# visited = set()
+#More than a topological sort this seems more like a DFS algorithm
+#root->child1->child1_child1
+def topological_sort(node: Value, visited:set, topo:[]):
+    if node not in visited:
+        visited.add(node)
+        for child in node._prev:
+            topological_sort(child, visited, topo)
+        topo.append(node)
+
+#MODIFICATION: Implementing automatic backpropagation
+#NOTE: Still need to manually set the output gradient
 def neuron_automatic_backpropagation():
     x1 = Value(data=2.0, label="x1")
     x2 = Value(data=0.0, label="x2")
@@ -243,11 +257,17 @@ def neuron_automatic_backpropagation():
     # Since the tanh result value backpropagation function applies the chain rule by default
     # we need to manually set o.grad for backpropagation to work as expected
     o.grad = 1.00
-    o._backward()
-    n._backward()
-    x1w1_x2w2._backward()
-    x2w2._backward()
-    x1w1._backward()
+    visited = set()
+    topo = []
+    topological_sort(o, visited, topo)
+    topo.reverse()
+    for node in topo:
+        node._backward()
+    # o._backward()
+    # n._backward()
+    # x1w1_x2w2._backward()
+    # x2w2._backward()
+    # x1w1._backward()
     # The below is not needed for x1, w1, x2 and w2 because the previous calls to ._backward set those gradients
     # x2._backward()
     # w2._backward()
@@ -257,21 +277,3 @@ def neuron_automatic_backpropagation():
     draw(nodes, edges)
 neuron_automatic_backpropagation()
 # TO DO: Do I need to include a step or conditional to not apply chain rule for multiplication result nodes?
-# TO DO: Implement topological sort on the nodes to be able to implement backward progapation for a whole expression
-stack = []
-visited = set()
-#More than a topological sort this seems more like a DFS algorithm
-#root->child1->child1_child1
-def topological_sort(node: Value):
-    if node not in visited:
-        visited.add(node)
-        for child in node._prev:
-            topological_sort(child)
-        stack.append(node)
-d = Value(data=2)
-e = Value(data=3)
-c = d + e
-b = Value(data=4)
-a = b + c
-topological_sort(a)
-print(stack)
