@@ -43,6 +43,7 @@ print(f"D2 : {d2}")
 print(f"Slope : {(d2-d1)/h}")
 
 # A class that will help to track trace of operations performed on values
+# FIX: calling ._backward on a node more than once overwrites instead of accumulating, replaced = for +=
 class Value:
     def __init__(self, data, _children=(), _op="", label=""):
         self.data = data
@@ -58,8 +59,8 @@ class Value:
         out = Value(self.data + other.data, (self, other), "+")
         # calculating local gradients by backpropagation (including chain rule)
         def _backward():
-            self.grad = 1.0 * out.grad
-            other.grad = 1.0 * out.grad
+            self.grad += 1.0 * out.grad
+            other.grad += 1.0 * out.grad
         out._backward = _backward
         return out
     def __mul__(self, other):
@@ -67,8 +68,8 @@ class Value:
         out = Value(self.data * other.data, (self, other), "*")
         # calculating local gradients by backpropagation (including chain rule)
         def _backward():
-            self.grad = other.data * out.grad
-            other.grad = self.data * out.grad
+            self.grad += other.data * out.grad
+            other.grad += self.data * out.grad
         out._backward = _backward
         return out
     def tanh(self):
@@ -76,7 +77,7 @@ class Value:
         tanh = (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
         out = Value(data=tanh, _children=(self, ), _op="tanh")
         def _backward():
-            self.grad = (1 - tanh**2) * out.grad
+            self.grad += (1 - tanh**2) * out.grad
         out._backward = _backward
         return out
     def backward(self):
@@ -108,10 +109,10 @@ c.grad = 1.00
 a.grad = -3.00
 b.grad = 2.00
 # Checking the objects are set correctly
-print(f"a data: {a}, children: {a._prev}, op: {a._op}")
-print(f"b data: {b}, children: {b._prev}, op: {b._op}")
-print(f"c data: {c}, children: {c._prev}, op: {c._op}")
-print(f"d data: {d}, children: {d._prev}, op: {d._op}")
+# print(f"a data: {a}, children: {a._prev}, op: {a._op}")
+# print(f"b data: {b}, children: {b._prev}, op: {b._op}")
+# print(f"c data: {c}, children: {c._prev}, op: {c._op}")
+# print(f"d data: {d}, children: {d._prev}, op: {d._op}")
 
 from graphviz import Digraph
 
@@ -137,12 +138,8 @@ def draw(nodes, edges):
             graph.edge(f"{id(node)}{node._op}", str(id(node)))
     for tail, head in edges:
         graph.edge(str(id(tail)), f"{id(head)}{head._op}")
-    # print(graph.source)
     graph.render(directory=path.dirname(__file__), view=True)
 
-# nodes, edges = trace(e)
-# draw(nodes, edges)
-# print(nodes, edges)
 
 def manual_backpropagation():
     h = 0.00001
@@ -158,7 +155,7 @@ def manual_backpropagation():
     # d.data += h
     e2 = d + c
     slope = (e2.data-e1.data)/h
-    print(slope)
+    # print(slope)
     # To current node (with exception of the head node which grad is the 1 because dhead/dhead = 1)
     # So if a*b = d and c + d = e
     # de/de = 1 so this will be the grad for the head node
@@ -179,7 +176,7 @@ def manual_backpropagation():
     # de/db = de/dd * dd/db -> de/db = 1.00 * d(a * b)/db
     # (a * b+h)-(a * b)/h -> a*b + h*a - a*b/h -> h*a/h -> a
     # Then de/db = 1.00 * a, for a = 2.00 de/db = 2.00
-    # An interesting note is that plus nodes take the parent gradient and distribute it tho the children nodes
+    # An interesting note is that plus nodes take the parent gradient and distribute it to the children nodes
     
 manual_backpropagation()
 
@@ -245,8 +242,6 @@ def neuron_backpropagation():
 neuron_backpropagation()
 
 #IMPLEMENTATION: Topological sort
-# stack = []
-# visited = set()
 #More than a topological sort this seems more like a DFS algorithm
 #root->child1->child1_child1
 def topological_sort(node: Value, visited:set, topo:[]):
