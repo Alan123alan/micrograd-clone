@@ -79,6 +79,14 @@ class Value:
         return out
     def __rmul__(self,other):
         return self * other
+    def exp(self):
+        x = self.data
+        out = Value(data=math.exp(x), _children=(self, ), _op="e")
+        def _backward():
+            pass
+        out._backward = _backward
+        return out
+
     def tanh(self):
         x = self.data
         tanh = (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
@@ -295,7 +303,7 @@ def neuron_automatic_backpropagation():
     draw(nodes, edges)
 neuron_automatic_backpropagation()
 # TO DO: Do I need to include a step or conditional to not apply chain rule for multiplication result nodes?
-# TO DO: can you add a Value object to an Int or float objects?
+# TO DO: implement _backward for exp method in Value class 
 a = Value(data=32)
 b = 1 + a
 c = 3 * b
