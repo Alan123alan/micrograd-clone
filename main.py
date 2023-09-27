@@ -44,6 +44,7 @@ print(f"Slope : {(d2-d1)/h}")
 
 # A class that will help to track trace of operations performed on values
 # FIX: calling ._backward on a node more than once overwrites instead of accumulating, replaced = for +=
+# IMPLEMENTATION: allow operations between Value class objects and numbers
 class Value:
     def __init__(self, data, _children=(), _op="", label=""):
         self.data = data
@@ -55,6 +56,7 @@ class Value:
     def __repr__(self):
         return f"Value(data={self.data})"
     def __add__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
         # out = parent node, self and other = children nodes
         out = Value(self.data + other.data, (self, other), "+")
         # calculating local gradients by backpropagation (including chain rule)
@@ -64,6 +66,7 @@ class Value:
         out._backward = _backward
         return out
     def __mul__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
         # out = parent node, self and other = children nodes
         out = Value(self.data * other.data, (self, other), "*")
         # calculating local gradients by backpropagation (including chain rule)
