@@ -65,6 +65,8 @@ class Value:
             other.grad += 1.0 * out.grad
         out._backward = _backward
         return out
+    def __radd__(self, other):
+        return self + other
     def __mul__(self, other):
         other = other if isinstance(other, Value) else Value(other)
         # out = parent node, self and other = children nodes
@@ -75,6 +77,8 @@ class Value:
             other.grad += self.data * out.grad
         out._backward = _backward
         return out
+    def __rmul__(self,other):
+        return self * other
     def tanh(self):
         x = self.data
         tanh = (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
@@ -291,3 +295,11 @@ def neuron_automatic_backpropagation():
     draw(nodes, edges)
 neuron_automatic_backpropagation()
 # TO DO: Do I need to include a step or conditional to not apply chain rule for multiplication result nodes?
+# TO DO: can you add a Value object to an Int or float objects?
+a = Value(data=32)
+b = 1 + a
+c = 3 * b
+type(a)
+type(1)
+print(b)
+print(c)
