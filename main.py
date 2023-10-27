@@ -83,10 +83,19 @@ class Value:
         x = self.data
         out = Value(data=math.exp(x), _children=(self, ), _op="e")
         def _backward():
-            pass
+            self.grad += out.data * out.grad
+        out._backward = _backward
+        return out
+    def __pow__(self, other):
+        other = other if isinstance(other, (int, float)) else Value(other)
+        out = Value(data=self.data**other, _children=(self, ), _op=f"**{other}")
+        def _backward():
+            self.grad += other * (self.data**(other-1)) * out.grad
         out._backward = _backward
         return out
 
+    def __truediv__(self, other):
+        return self * other ** -1
     def tanh(self):
         x = self.data
         tanh = (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
@@ -307,6 +316,8 @@ neuron_automatic_backpropagation()
 a = Value(data=32)
 b = 1 + a
 c = 3 * b
+# The previous expression is equivalent to 1.__add__(a)
+# Let's check
 type(a)
 type(1)
 print(b)
