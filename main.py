@@ -93,6 +93,12 @@ class Value:
             self.grad += other * (self.data**(other-1)) * out.grad
         out._backward = _backward
         return out
+    
+    def __neg__(self):
+        return self * -1
+    
+    def __sub__(self, other):
+        return self + (-other)
 
     def __truediv__(self, other):
         return self * other ** -1
@@ -287,7 +293,9 @@ def neuron_automatic_backpropagation():
     x2w2 = x2*w2; x2w2.label = "x2w2"
     x1w1_x2w2 = x1w1 + x2w2; x1w1_x2w2.label = "x1w1+x2w2"
     n = x1w1_x2w2 + b; n.label = "neuron cell body"
-    o = n.tanh(); o.label = "output"
+    # o = n.tanh(); o.label = "output"
+    e = (2*n).exp()
+    o = (e - 1) / (e + 1); o.label = "output"
     # Since the tanh result value backpropagation function applies the chain rule by default
     # we need to manually set o.grad for backpropagation to work as expected
     # o.grad = 1.00
