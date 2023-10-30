@@ -373,9 +373,19 @@ class MLP:
         
         
 
-x = [2.0, 3.0, -1.0]
-n = MLP(len(x), [4,4,1])
-n(x)
+n = MLP(3, [4,4,1])
+xs = [
+        [2.0, 3.0, -1.0],
+        [3.0, -1.0, 0.5],
+        [0.5, 1.0, 1.0],
+        [1.0, 1.0, -1.0],
+    ]
+ys = [1.0, -1.0, -1.0, 1.0]#desired outputs
+ypred = [n(x) for x in xs]
+print(ypred)
+#calculating the mean squared error loss function
+loss = sum([(ygt - yout)**2 for ygt, yout in zip(ys, ypred)])
+# n(x)
 
-nodes, edges = trace(n(x))
-draw(nodes, edges)
+# nodes, edges = trace(n(x))
+# draw(nodes, edges)
