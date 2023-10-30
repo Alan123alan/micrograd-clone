@@ -318,8 +318,8 @@ def neuron_automatic_backpropagation():
     # w2._backward()
     # x1._backward()
     # w1._backward()
-    nodes, edges = trace(o)
-    draw(nodes, edges)
+    # nodes, edges = trace(o)
+    # draw(nodes, edges)
 neuron_automatic_backpropagation()
 # TO DO: Do I need to include a step or conditional to not apply chain rule for multiplication result nodes?
 # TO DO: implement _backward for exp method in Value class 
@@ -361,7 +361,7 @@ class Layer:
         outs = [n(x) for n in self.neurons]
         return outs[0] if len(outs) == 1 else outs
     def parameters(self):
-        return [p for n in self.neurons for p in n.parameters]
+        return [p for n in self.neurons for p in n.parameters()]
 
 class MLP:
     def __init__(self, nin, nouts):
@@ -374,7 +374,7 @@ class MLP:
         return x
         
     def parameters(self):
-        return [p for layer in self.layers for p in layer.parameters]
+        return [p for layer in self.layers for p in layer.parameters()]
 
 n = MLP(3, [4,4,1])
 xs = [
@@ -384,11 +384,23 @@ xs = [
         [1.0, 1.0, -1.0],
     ]
 ys = [1.0, -1.0, -1.0, 1.0]#desired outputs
-ypred = [n(x) for x in xs]
-print(ypred)
-#calculating the mean squared error loss function
-loss = sum([(ygt - yout)**2 for ygt, yout in zip(ys, ypred)])
 # n(x)
+#reducing loss with gradient descent
+for i in range(200):
+    #forward pass
+    ypred = [n(x) for x in xs]
+    #calculating the mean squared error loss function
+    loss = sum([(yout - ygt)**2 for ygt, yout in zip(ys, ypred)])
+    #after calculating the loss we need to reset the gradients
+    for p in n.parameters():
+        p.grad = 0.0
+    #backward pass 
+    loss.backward()
+    #update data
+    for p in n.parameters():
+        p += -0.05 * p.grad
+    print(i, loss.data)
+
 
 # nodes, edges = trace(n(x))
 # draw(nodes, edges)
