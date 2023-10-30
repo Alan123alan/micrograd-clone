@@ -343,8 +343,7 @@ class Neuron:
     #this methods will execute when you call an instance of the neuron call with () as suffix
     def __call__(self, x) -> Any:
         #w * x + b 
-        activation = sum(wi*xi for wi, xi in zip(self.w, x)) + self.b
-        print(type(activation))
+        activation = sum((wi*xi for wi, xi in zip(self.w, x)), self.b)
         out = activation.tanh()
         return out
 
@@ -355,6 +354,28 @@ class Neuron:
         # total += self.b
         # print(total)
 
-x = [2.0, 3.0]
-n = Neuron(len(x))
+class Layer:
+    def __init__(self, nin, nout):
+        self.neurons = [Neuron(nin) for _ in range(nout)]
+    def __call__(self, x):
+        outs = [n(x) for n in self.neurons]
+        return outs[0] if len(outs) == 1 else outs
+
+class MLP:
+    def __init__(self, nin, nouts):
+        sz = [nin] + nouts
+        self.layers = [Layer(sz[i],sz[i+1]) for i in range(len(nouts))]
+    
+    def __call__(self, x):
+        for layer in self.layers:
+            x = layer(x)
+        return x
+        
+        
+
+x = [2.0, 3.0, -1.0]
+n = MLP(len(x), [4,4,1])
 n(x)
+
+nodes, edges = trace(n(x))
+draw(nodes, edges)
