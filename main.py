@@ -346,20 +346,22 @@ class Neuron:
         activation = sum((wi*xi for wi, xi in zip(self.w, x)), self.b)
         out = activation.tanh()
         return out
-
         #This should print the same as the list comprehension version
         # total = 0
         # for i in range(len(self.w)):
         #     total += x[i] * self.w[i]
         # total += self.b
         # print(total)
-
+    def parameters(self):
+        return self.w + [self.b]
 class Layer:
     def __init__(self, nin, nout):
         self.neurons = [Neuron(nin) for _ in range(nout)]
     def __call__(self, x):
         outs = [n(x) for n in self.neurons]
         return outs[0] if len(outs) == 1 else outs
+    def parameters(self):
+        return [p for n in self.neurons for p in n.parameters]
 
 class MLP:
     def __init__(self, nin, nouts):
@@ -371,7 +373,8 @@ class MLP:
             x = layer(x)
         return x
         
-        
+    def parameters(self):
+        return [p for layer in self.layers for p in layer.parameters]
 
 n = MLP(3, [4,4,1])
 xs = [
