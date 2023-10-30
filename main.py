@@ -1,4 +1,6 @@
 import math
+import random
+from typing import Any
 import numpy as np
 import matplotlib.pyplot as plt
 from os import path
@@ -330,3 +332,29 @@ type(a)
 type(1)
 print(b)
 print(c)
+
+class Neuron:
+    def __init__(self, nin):
+        #create a random weight for every of the inputs provided in number of inputs (nin)
+        self.w = [Value(random.uniform(1, -1)) for _ in range(nin)]
+        #generate a random bias for the neuron
+        self.b = Value(random.uniform(1, -1))
+    
+    #this methods will execute when you call an instance of the neuron call with () as suffix
+    def __call__(self, x) -> Any:
+        #w * x + b 
+        activation = sum(wi*xi for wi, xi in zip(self.w, x)) + self.b
+        print(type(activation))
+        out = activation.tanh()
+        return out
+
+        #This should print the same as the list comprehension version
+        # total = 0
+        # for i in range(len(self.w)):
+        #     total += x[i] * self.w[i]
+        # total += self.b
+        # print(total)
+
+x = [2.0, 3.0]
+n = Neuron(len(x))
+n(x)
