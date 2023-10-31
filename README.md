@@ -52,19 +52,35 @@ b = -3
 c = 10
 d1 = f(a,b,c)
 ```
-To know how the output of the function will respond if any of it's inputs changes by a bit, we can bump all of the inputs a see how the output changes.  
-If the `a` input is increased by a small amount `h` this means that the function should be derived with respect to `a`, `d(a)/da->1` so the result of derived function (slope) only depends on `b` and `c`.
+To know how the output of the function will respond if any of it's inputs changes by a bit, we can bump all of the inputs and see how   
+the output changes.   
+  
+If the `a` input is increased by a small amount `h` this means that the function should be derived with respect to `a`,  
+and since `d(a)/da->1` the result of derived function (slope) only depends on `b` and `c`.
+
 ```Python
 a = 2 + h
 b = -3
 c = 10
 d2 = f(a,b,c)
 ```
-# a += h
-# If b is increased by a bit
-# Meaning that the function is derived with respect to b, b->1 so the result of derived function (slope) only depends on a and c
-b += h
+If the `b` input is increased by a small amount `h` this means that the function should be derived with respect to `b`,  
+and since `d(b)/db->1` the result of derived function (slope) only depends on `a` and `c`.
+
+```Python
+a = 2
+b = -3 + h
+c = 10
 d2 = f(a,b,c)
-print(f"D1 : {d1}")
-print(f"D2 : {d2}")
-print(f"Slope : {(d2-d1)/h}")
+```
+
+If the `c` input is increased by a small amount `h` this means that the function should be derived with respect to `c`,  
+and since `d(c)/dc->1` the result of derived function (slope) only depends on `a` and `b`.
+
+```Python
+a = 2
+b = -3
+c = 10 + h
+d2 = f(a,b,c)
+```
+
